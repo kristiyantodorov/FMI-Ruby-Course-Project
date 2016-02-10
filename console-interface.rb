@@ -1,4 +1,4 @@
-require_relative 'airport'
+require 'airport'
 
 module ConsoleInterface
   include Airport
@@ -171,7 +171,7 @@ module ConsoleInterface
       
       case action
       when 1
-        guest.view_all_flights
+        guest.view_all_flights.each { |row| puts row }
         guest_actions(guest)
       when 2
         puts "Enter destination: "
