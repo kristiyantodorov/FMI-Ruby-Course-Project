@@ -1,4 +1,4 @@
-require 'airport'
+require_relative 'airport'
 
 module ConsoleInterface
   include Airport
@@ -7,20 +7,21 @@ module ConsoleInterface
   def greeting
     puts "Welcome to the Ruby implemented airport software!"
     puts "What type of user are you?"
-    puts "1. Guest.\n2. Admin"
-    puts "3. Exit.\n"
+    print "1. Guest.\n2. Admin\n3. Exit.\n"
+    print "Enter your choice: "
     type = gets.chomp.to_i
+    breaker
     if type == 1
       GuestInterface::guest_greeting
     elsif type == 2
       AdminInterface::admin_greeting
     else
-      puts "Have a nice day!\n"
+      puts "Have a nice day!"
     end
   end
   
   def get_id
-    puts "Please enter flight id: "
+    print "Please enter flight id: "
     id = gets.chomp.to_i
   end
   
@@ -32,9 +33,9 @@ module ConsoleInterface
     module_function
 
     def admin_greeting
-      puts "Please authorize.\nUsername: "
+      print "Please authorize.\nUsername: "
       username = gets.chomp
-      puts "Password: "
+      print "Password: "
       password = gets.chomp
       admin = Airport::Admin.new(username)
       admin_login(admin, password)
@@ -43,11 +44,11 @@ module ConsoleInterface
     def admin_login(admin, password)
       admin.login(password)
       if admin.logged
-        puts "Logged in successfully!\n"
+        puts "Logged in successfully!"
         logged_admin_actions(admin)
       else
         puts "Incorrect username or password"
-        puts "Would you like to try again? (y/n): "
+        print "Would you like to try again? (y/n): "
         answer = gets.chomp
         if answer == 'y'
           admin_greeting
@@ -59,17 +60,17 @@ module ConsoleInterface
 
     def admin_options
       ConsoleInterface::breaker
-      puts "What would you like to do?\n"
-      puts "1. Add flight.\n"
-      puts "2. Remove flight.\n"
-      puts "3. Change flight status.\n"
-      puts "4. Change flight schedule.\n"
-      puts "5. View flight table.\n"
-      puts "6. View all the changes for a flight.\n"
-      puts "7. Promote new admin.\n"
-      puts "8. Check financial state.\n"
-      puts "9. Change password.\n"
-      puts "0. Logout.\n"
+      puts "What would you like to do?"
+      puts "1. Add flight."
+      puts "2. Remove flight."
+      puts "3. Change flight status."
+      puts "4. Change flight schedule."
+      puts "5. View flight table."
+      puts "6. View all the changes for a flight."
+      puts "7. Promote new admin."
+      puts "8. Check financial state."
+      puts "9. Change password."
+      puts "0. Logout."
       ConsoleInterface::breaker
     end 
 
@@ -92,7 +93,9 @@ module ConsoleInterface
 
     def logged_admin_actions(admin)
       admin_options
+      print "Enter your choice: "
       action = gets.chomp.to_i
+      ConsoleInterface::breaker
       case action
       when 1
         gather_flight_information(admin)
@@ -103,15 +106,15 @@ module ConsoleInterface
         logged_admin_actions(admin)
       when 3
         id = ConsoleInterface::get_id
-        puts "Please enter the new status: "
+        print "Please enter the new status: "
         new_status = gets.chomp
         admin.change_flight_information(id, 'Status', new_status)
         logged_admin_actions(admin)
       when 4
         id = ConsoleInterface::get_id
-        puts "Please enter time of departure: "
+        print "Please enter time of departure: "
         new_departure = gets.chomp
-        puts "Please enter time of arrival: "
+        print "Please enter time of arrival: "
         new_arrival = gets.chomp
         admin.change_flight_information(id, 'Departure', new_departure)
         admin.change_flight_information(id, 'Arrival', new_arrival)
@@ -124,9 +127,9 @@ module ConsoleInterface
         puts admin.view_changes(id)
         logged_admin_actions(admin)
       when 7
-        puts "Enter new admin's username:\n"
+        print "Enter new admin's username: "
         username = gets.chomp
-        puts "Enter new admin's password:\n"
+        print "Enter new admin's password: "
         password = gets.chomp
         admin.promote(username, password)
         logged_admin_actions(admin)
@@ -134,7 +137,7 @@ module ConsoleInterface
         puts admin.check_balance
         logged_admin_actions(admin)
       when 9
-        puts "Enter the new password:\n"
+        print "Enter the new password: "
         password = gets.chomp
         admin.change_password(password)
         logged_admin_actions(admin)
@@ -155,31 +158,42 @@ module ConsoleInterface
 
     def guest_options
       ConsoleInterface::breaker
-      puts "What would you like to do?\n"
-      puts "1. View flight table.\n"
-      puts "2. View flights from.\n"
-      puts "3. View flights to.\n"
-      puts "4. Check flight status.\n"
-      puts "5. Buy ticket.\n"
-      puts "6. Go back.\n"
+      puts "What would you like to do?"
+      puts "1. View flight table."
+      puts "2. View flights from."
+      puts "3. View flights to."
+      puts "4. Check flight status."
+      puts "5. Buy ticket."
+      puts "6. Go back."
       ConsoleInterface::breaker
+    end
+
+    def print_flights(flights)
+      if flights == []
+        puts "No flights matched your criteria."
+      else
+        flights.each { |row| puts row }
+      end
     end
 
     def guest_actions(guest)
       guest_options
-      action = gets.chomp.to_i
-      
+      print "Enter your choice: "
+      action = gets.chomp.to_i 
+      ConsoleInterface::breaker
       case action
       when 1
-        guest.view_all_flights.each { |row| puts row }
+        flights = guest.view_all_flights
+        print_flights(flights)
         guest_actions(guest)
       when 2
-        puts "Enter destination: "
+        print "Enter destination: "
         destination = gets.chomp
-        guest.view_flights_by_attribute('Arriving', destination)
+        flights = guest.view_flights_by_attribute('Arriving', destination)
+        print_flights(flights)
         guest_actions(guest)
       when 3
-        puts "Enter destination: "
+        print "Enter destination: "
         destination = gets.chomp
         guest.view_flights_by_attribute('Departing', destination)
         guest_actions(guest)
