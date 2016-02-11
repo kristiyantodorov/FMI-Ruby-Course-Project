@@ -17,7 +17,7 @@ module Airport::AdminOperations
   end
 
   def remove_flight(flight_id)
-    DatabaseOperations.make_change(flight_id, 'Deleted', 'true', username)
+    Airport::DatabaseOperations.make_change(flight_id, 'Deleted', 'true', username)
   end
 
   def check_balance
@@ -25,6 +25,6 @@ module Airport::AdminOperations
   end
 
   def view_changes(flight_id)
-    DatabaseOperations::query(flight_id, 'Changes')
+    Airport::DatabaseOperations::query(flight_id, 'Changes')
   end
 end
