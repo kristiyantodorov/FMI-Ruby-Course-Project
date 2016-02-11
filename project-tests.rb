@@ -1,10 +1,6 @@
 require_relative 'airport'
 require 'sqlite3'
 
-describe Airport::Flight do
-
-end
-
 describe Airport::Admin do
   admin = Airport::Admin.new('admin')
 
@@ -67,7 +63,7 @@ describe Airport::DatabaseOperations do
         end
 
       desired_row = [-1, 'Sofia', 'Bulgaria Air', 'departing', '01:00', '02:00', 'On time', 120, '', 'false']
-      
+
       expect(Airport::DatabaseOperations.get_row_by_flight_number(-1)).to eq desired_row
       SQLite3::Database.open 'Airport.db' do |db|
         db.execute "DELETE FROM Flights WHERE Id=-1"
@@ -83,7 +79,7 @@ describe Airport::Finances do
 
       Airport::Finances.earn_money(100)
       expect(Airport::Finances.check_balance).to eq (old_balance + 20)
-      
+
       #update_balance method is also tested in this example
       Airport::Finances.update_balance(old_balance)
       expect(Airport::Finances.check_balance).to eq old_balance
@@ -105,6 +101,72 @@ describe Airport::Guest do
 
       SQLite3::Database.open 'Airport.db' do |db|
         db.execute "DELETE FROM Flights WHERE Id=-1"
+      end
+    end
+  end
+end
+
+describe Airport::AdminOperations do
+  describe '#add_flight' do
+    it 'adds a flight to the database' do
+      admin = Airport::Admin.new('admin')
+
+      #adding record for the test
+      admin.add_flight('Sofia', 'departing', 'Bulgaria Air', '01:00', '02:00', 100)
+
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        db.execute "SELECT * FROM Flights WHERE Id = #{max_id}" do |row|
+          expect(row).to eq ([max_id, 'Sofia', 'Bulgaria Air', 'departing', '01:00', '02:00', 'On time', 100, '', 'false'])
+        end
+      end
+
+      #deleting the record added by the test
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        db.execute "DELETE FROM Flights WHERE Id = #{max_id}"
+      end
+    end
+  end
+
+  describe '#change_flight_information' do
+    it 'successfully changes flight attribute' do
+      admin = Airport::Admin.new('admin')
+
+      #adding record for the test
+      admin.add_flight('Sofia', 'departing', 'Bulgaria Air', '01:00', '02:00', 100)
+
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        admin.change_flight_information(max_id, 'Status', '5 minutes late')
+        expect(Airport::DatabaseOperations.query(max_id, 'Status')).to eq '5 minutes late'
+      end
+
+      #deleting the record added by the test
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        db.execute "DELETE FROM Flights WHERE Id = #{max_id}"
+      end
+    end
+  end
+  
+  describe '#remove_flight' do
+    it 'successfully removes flight' do
+      admin = Airport::Admin.new('admin')
+
+      #adding record for the test
+      admin.add_flight('Sofia', 'departing', 'Bulgaria Air', '01:00', '02:00', 100)
+
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        admin.remove_flight(max_id)
+        expect(Airport::DatabaseOperations.query(max_id, 'Deleted')).to eq 'true'
+      end
+
+      #deleting the record added by the test
+      SQLite3::Database.open 'Airport.db' do |db|
+        max_id = (db.execute "SELECT MAX(Id) FROM Flights").first.first
+        db.execute "DELETE FROM Flights WHERE Id = #{max_id}"
       end
     end
   end
