@@ -214,4 +214,3 @@ module ConsoleInterface
 end
 
 ConsoleInterface.greeting
-
